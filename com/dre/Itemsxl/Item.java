@@ -1,6 +1,8 @@
-package com.dre.Itemsxl;
+package com.dre.itemsxl;
 
 import java.util.List;
+
+
 
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -11,13 +13,13 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class Item extends ItemStack{
 	ItemMeta itemMeta = this.getItemMeta();
 	
+	
 	public Item(String mat, String Name, List<String> lore, int amount){
 		this.setType(Material.getMaterial(mat));
 		this.setAmount(amount);
 		itemMeta = this.getItemMeta();
 		itemMeta.setDisplayName(Name);
 		itemMeta.setLore(lore);
-		itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 		this.setItemMeta(itemMeta);
 	}
 	
@@ -29,11 +31,15 @@ public class Item extends ItemStack{
 	public void hideEnchants(Boolean hide){
 		if(hide){
 			itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-			this.setItemMeta(itemMeta);
 		}else{
 			itemMeta.removeItemFlags(ItemFlag.HIDE_ENCHANTS);
-			this.setItemMeta(itemMeta);
 		}
+		this.setItemMeta(itemMeta);
 	}
-		
+	
+	public ItemStack getItemStack(){
+		return this;
+	}
+
+	
 }
