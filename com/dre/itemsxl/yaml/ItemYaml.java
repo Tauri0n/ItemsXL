@@ -80,6 +80,7 @@ public class ItemYaml {
 	public void save(){
 		try{
 			yaml.save(getPath());
+			load();
 		}catch (Exception e){
 			e.printStackTrace();
 		}
@@ -139,7 +140,7 @@ public class ItemYaml {
 		newRecipe[0] = getName();
 		List<String> recipeList = getRecipe();
 		for (int i = 0; i <= 8; i++) {
-			if (!recipeList.get(i).equals("AIR") || recipeList.get(i) != null) {
+			if (!recipeList.get(i).equals("AIR") && recipeList.get(i) != null) {
 				if (recipeList.get(i).endsWith(".yml")){
 					String[] parts = recipeList.get(i).split(".yml");
 					recipe.setIngredient(chars[i], P.getItemYaml(parts[0]).getItem().getType());
@@ -149,7 +150,10 @@ public class ItemYaml {
 					recipe.setIngredient(chars[i],Material.getMaterial(recipeList.get(i)));
 					newRecipe[i + 1] = null;
 				}
+				
 
+			}else{
+				newRecipe[i + 1] = null;
 			}
 		}
 		setNewRecipe(newRecipe);
@@ -197,7 +201,8 @@ public class ItemYaml {
 	}
 	
 	public String getDisplayName(){
-		return  ChatColor.translateAlternateColorCodes('&', (String)yaml.get(DISPLAYNAME));
+		String result = (String)yaml.get(DISPLAYNAME);
+		return  ChatColor.translateAlternateColorCodes('§', result );
 		
 	}
 	

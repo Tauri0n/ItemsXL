@@ -51,6 +51,7 @@ public class BlockYaml {
 		try {
 			yaml.set(LOCATIONS, blockLocations);
 			yaml.save(getPath());
+			load();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -61,26 +62,7 @@ public class BlockYaml {
 		try {
 			yaml.load(getPath());
 			setLocations();
-			for (String[] location : getLocationsStringArrayList()){
-				
-				World world = Bukkit.getWorld(location[0]);
-				Double x = Double.parseDouble(location[1]);
-				Double y = Double.parseDouble(location[2]);
-				Double z = Double.parseDouble(location[3]);
-				
-				Location loc = new Location(world, x , y, z);
-				
-				loc.getBlock().setMetadata(NAME, new FixedMetadataValue(plugin , getName()));
-				if(hasDropItemName()){
-					loc.getBlock().setMetadata(DROP_ITEM_NAME, new FixedMetadataValue(plugin , getDropItemName()));
-				}
-				if(hasStructureName()){
-					loc.getBlock().setMetadata(STRUCTURE_NAME, new FixedMetadataValue(plugin , getStructureName()));
-				}
-				if(hasInventoryName()){
-					loc.getBlock().setMetadata(INVENTORY_NAME, new FixedMetadataValue(plugin , getInventoryName()));
-				}
-			}
+			P.addBlockYaml(this);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -145,10 +127,6 @@ public class BlockYaml {
 	/*
 	 * Locations
 	 */
-	private void setLocations(){
-		this.blockLocations = yaml.getStringList(LOCATIONS);
-	}
-	
 	/** String Liste mit den Locations. Ein String ist so aufgebaut: "world, x, y, z" **/
 	public List<String> getLocationsStringList(){
 		return blockLocations;
@@ -167,16 +145,54 @@ public class BlockYaml {
 	}
 	
 	public void addLocation(Location location){
+		addMetadata(location);
 		blockLocations.add(getString(location));
 		save();
-		plugin.loadBlockYaml(getName());
 	}
 	
 	public void removeLocation(Location location){
 		if(blockLocations.contains(getString(location))){
+			removeMetadata(location);
 			blockLocations.remove(getString(location));
 			save();
-			plugin.loadBlockYaml(getName());
+		}
+	}
+	
+	private void setLocations(){
+		this.blockLocations = yaml.getStringList(LOCATIONS);
+		for(String[] location : getLocationsStringArrayList()){
+			World world = Bukkit.getWorld(location[0]);
+			Double x = Double.parseDouble(location[1]);
+			Double y = Double.parseDouble(location[2]);
+			Double z = Double.parseDouble(location[3]);
+			addMetadata(new Location(world, x , y, z));
+		}
+	}
+	
+	private void addMetadata(Location loc){
+		
+		loc.getBlock().setMetadata(NAME, new FixedMetadataValue(plugin , getName()));
+		if(hasDropItemName()){
+			loc.getBlock().setMetadata(DROP_ITEM_NAME, new FixedMetadataValue(plugin , getDropItemName()));
+		}
+		if(hasStructureName()){
+			loc.getBlock().setMetadata(STRUCTURE_NAME, new FixedMetadataValue(plugin , getStructureName()));
+		}
+		if(hasInventoryName()){
+			loc.getBlock().setMetadata(INVENTORY_NAME, new FixedMetadataValue(plugin , getInventoryName()));
+		}
+	}
+	
+	private void removeMetadata(Location loc){
+		loc.getBlock().removeMetadata(NAME, plugin);
+		if(hasDropItemName()){
+			loc.getBlock().removeMetadata(DROP_ITEM_NAME, plugin);
+		}
+		if(hasStructureName()){
+			loc.getBlock().removeMetadata(STRUCTURE_NAME, plugin);
+		}
+		if(hasInventoryName()){
+			loc.getBlock().removeMetadata(INVENTORY_NAME,plugin);
 		}
 	}
 	

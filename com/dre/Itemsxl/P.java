@@ -100,20 +100,24 @@ public class P extends JavaPlugin {
 			String[] parts = file.list()[i].split(".yml");
 			SchematicYaml schematic = new SchematicYaml(parts[0]);
 			schematic.load();
-			if(schematics.containsKey(parts[0])){
-				schematics.replace(parts[0], schematic);
+			if(containSchematic(parts[0])){
+				removeSchematic(parts[0]);
 			}else{
-				schematics.put(parts[0], schematic);
-			}			
+				addSchematic(schematic);
+			}
 		}
+	}
+	
+	private static void removeSchematic(String name){
+		schematics.remove(name);
 	}
 
 	public static SchematicYaml getSchematic(String name) {
 		return schematics.get(name);
 	}
 	
-	public static void addSchematic(String key, SchematicYaml schematic){
-		schematics.put(key, schematic);
+	public static void addSchematic(SchematicYaml schematic){
+		schematics.put(schematic.getName(), schematic);
 	}
 	
 	public static boolean containSchematic(SchematicYaml schematic){
@@ -160,7 +164,7 @@ public class P extends JavaPlugin {
 	/**
 	 * Lädt die Blöcke aus dem Ordenr. Und fügt diese in der "Blocks" Map ein.
 	 */
-	public void loadBlocks(){
+	private void loadBlocks(){
 		blocks.clear();
 		File file = new File(getPath() + "/blocks");
 		for (int i = 0; i < file.list().length; i++) {
@@ -169,15 +173,9 @@ public class P extends JavaPlugin {
 		}
 	}
 	
-	public void loadBlockYaml(String fileName){
-		if(blocks.containsKey(fileName)){
-			blocks.remove(getBlockYaml(fileName));
-		}
+	private void loadBlockYaml(String fileName){
 		BlockYaml blockYaml = new BlockYaml(fileName);
 		blockYaml.load();
-		
-		addBlockYaml(blockYaml);
-		
 	}
 	
 	public static BlockYaml getBlockYaml(String fileName){

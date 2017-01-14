@@ -15,7 +15,6 @@ import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.world.StructureGrowEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -66,9 +65,12 @@ public class Events implements Listener {
 					int recipeIndex = 0;
 					String[] recipe = config.getNewRecipe();
 					for(ItemStack item : e.getInventory().getStorageContents()){
-						if(Metadata.getString(item, ItemYaml.NAME) != recipe[recipeIndex]){
-							rightItems = false;
+						if(Metadata.hasKey(item, ItemYaml.NAME)){
+							if(Metadata.getString(item, ItemYaml.NAME) != recipe[recipeIndex]){
+								rightItems = false;
+							}
 						}
+						
 						recipeIndex++;
 					}
 					if(!rightItems){
@@ -87,23 +89,22 @@ public class Events implements Listener {
 	@EventHandler
 	public void onGrow(StructureGrowEvent e) {
 		Location location = e.getLocation();
-		if(location.getBlock().hasMetadata(BlockYaml.STRUCTURE_NAME)){
+		if(Metadata.hasKey(location, BlockYaml.STRUCTURE_NAME)){
 			e.setCancelled(true);
-			for (String block : P.getSchematic(location.getBlock().getMetadata(BlockYaml.STRUCTURE_NAME).get(0).value().toString()).getBlocks()) {
+			String sName = Metadata.getString(location, BlockYaml.STRUCTURE_NAME);
+			for (String block : P.getSchematic(sName).getBlocks()) {
 				String[] parts = block.split(",");
 				location.add(Short.parseShort(parts[0]),Short.parseShort(parts[1]), Short.parseShort(parts[2]));
 				Material material = location.getBlock().getType();
 				if(!material.isSolid()){
-					if(location.getBlock().hasMetadata(BlockYaml.STRUCTURE_NAME)){
-						String sName = location.getBlock().getMetadata(BlockYaml.STRUCTURE_NAME).get(0).value().toString();
-						BlockYaml blockYaml = new BlockYaml(sName);
-						if(P.containsBlockYaml(sName)){
-							blockYaml = P.getBlockYaml(sName);
+					if(Metadata.hasKey(location, BlockYaml.NAME)){
+						String bName = Metadata.getString(location, BlockYaml.NAME);
+						BlockYaml blockYaml = new BlockYaml(bName);
+						if(P.containsBlockYaml(bName)){
+							blockYaml = P.getBlockYaml(bName);
 						}
 						blockYaml.removeLocation(location);
 						blockYaml.save();
-						plugin.loadBlocks();
-						location.getBlock().removeMetadata(ItemYaml.STRUCTURE_NAME, P.getPlugin());
 					}
 					location.getBlock().setType(Material.getMaterial(parts[3]));
 					location.getBlock().setData(Byte.parseByte(parts[4]));
@@ -156,7 +157,7 @@ public class Events implements Listener {
 						ConnectingBlocks connectingBlocks = new ConnectingBlocks(location);
 						connectingBlocks.setTree();
 						schematic.setBlocks(connectingBlocks.start());
-						P.addSchematic(e.getPlayer().getUniqueId().toString(), schematic);
+						schematic.save();
 						e.getPlayer().sendMessage(schematic.getBlocks().size() + " Blöcke wurden hinzugefügt.");
 					}
 				}
@@ -172,23 +173,20 @@ public class Events implements Listener {
 	
 	@EventHandler
 	public void onPlace(BlockPlaceEvent e){
-		if(e.getItemInHand().getType().equals(Material.SAPLING)){
-			if(e.getItemInHand().hasItemMeta()){
-				String sName = Metadata.getString(e.getItemInHand(), ItemYaml.STRUCTURE_NAME);
-				if(sName.equals("-1")){
-					e.setCancelled(true);
-					return;
-				}
-				if(Metadata.hasKey(e.getItemInHand(), ItemYaml.STRUCTURE_NAME)){
-					e.getBlockPlaced().setMetadata(BlockYaml.STRUCTURE_NAME, new FixedMetadataValue(plugin, sName));
-					BlockYaml blockYaml = new BlockYaml(sName);
-					if(P.containsBlockYaml(sName)){
-						blockYaml = P.getBlockYaml(sName);
-					}
-					blockYaml.addLocation(e.getBlockPlaced().getLocation());
-					blockYaml.save();
-					plugin.loadBlocks();
-				}
+		ItemStack item = e.getItemInHand();
+		if(item.hasItemMeta()){
+			String sName = Metadata.getString(item, ItemYaml.STRUCTURE_NAME);
+			if(sName.equalsIgnoreCase("-1")){
+				e.setCancelled(true);
+				return;
+			}
+			BlockYaml blockYaml;
+			
+			if(Metadata.hasKey(item, ItemYaml.BLOCK_NAME)){
+				String bName = Metadata.getString(item, ItemYaml.BLOCK_NAME);
+				blockYaml = P.getBlockYaml(bName);
+				Location location = e.getBlock().getLocation();
+				blockYaml.addLocation(location);
 			}
 		}
 	}
@@ -196,20 +194,20 @@ public class Events implements Listener {
 	
 	@EventHandler
 	public void onBreak(BlockBreakEvent e){
-		if(e.getBlock().hasMetadata(BlockYaml.STRUCTURE_NAME)){
-			String sName = e.getBlock().getMetadata(BlockYaml.STRUCTURE_NAME).get(0).value().toString();
-			BlockYaml blockYaml = new BlockYaml(sName);
-			ItemStack item = P.getItemYaml(sName).getItem();
-			e.getBlock().getWorld().dropItem(e.getBlock().getLocation(), item);
+		Location loc = e.getBlock().getLocation();
+		if(Metadata.hasKey(loc, BlockYaml.NAME)){
 			e.getBlock().setType(Material.AIR);
 			e.setCancelled(true);
-			if(P.containsBlockYaml(sName)){
-				blockYaml = P.getBlockYaml(sName);
+			String bName = Metadata.getString(loc, BlockYaml.NAME);
+			BlockYaml blockYaml = P.getBlockYaml(bName);
+			if(Metadata.hasKey(loc, BlockYaml.DROP_ITEM_NAME)){
+				String sName = Metadata.getString(loc, BlockYaml.DROP_ITEM_NAME);
+				e.getBlock().getWorld().dropItem(loc, P.getItemYaml(sName).getItem());
 			}
-			blockYaml.removeLocation(e.getBlock().getLocation());
-			blockYaml.save();
-			plugin.loadBlocks();
-			e.getBlock().removeMetadata(BlockYaml.STRUCTURE_NAME, plugin);
+			blockYaml.removeLocation(loc);
+			
+			
+			
 		}
 	}
 	

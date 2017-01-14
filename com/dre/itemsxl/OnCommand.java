@@ -11,6 +11,7 @@ import org.bukkit.inventory.ItemStack;
 
 import com.dre.itemsxl.inventorys.SaplingSelectInventory;
 import com.dre.itemsxl.util.Metadata;
+import com.dre.itemsxl.yaml.BlockYaml;
 import com.dre.itemsxl.yaml.ItemYaml;
 import com.dre.itemsxl.yaml.SchematicYaml;
 
@@ -61,7 +62,6 @@ public class OnCommand {
 										SchematicYaml schematic = P.getSchematic(player.getUniqueId().toString());					//SchematicYaml wird aus der Liste gesetzt 
 										schematic.setName(args[1]);																	//schematic wird umbenannt 
 										schematic.save();																			//schematic wird abgespeichert
-										plugin.loadSchematics();																	//alle schematics werden neu geladen um mögliche überschneidungen abzufangen
 										
 										ItemYaml itemYaml = new ItemYaml(args[1]);													//neue ItemYaml
 										itemYaml.setDisplayName("&r" + args[1]);													//Anzeige Name wird gesetzt
@@ -70,10 +70,15 @@ public class OnCommand {
 										List<String> lore = new ArrayList<String>();												//Neue Liste wird erzeugt für die Lore/Beschreibung vom Item
 										lore.add("&7Enthält &a" + schematic.getBlocks().size() + " &7Blöcke");						//Eine Zeile wird der Lore hinzugefügt
 										itemYaml.setLore(lore);																		//Lore wird der ItemYaml übergeben
-										itemYaml.setStructureName(args[1]);															//Die oben erzeugte Struktur wird in der ItemYaml per name festgelegt
+										itemYaml.setBlockName(args[1]);
+										itemYaml.setStructureName(args[1]);
 										itemYaml.save();																			//Die ItemYaml wird abgespeichert
-										plugin.loadItems();																			//Alle Items werden neu geladen um mögliche überschneidungen abzufangen
-											
+										
+										BlockYaml blockYaml = new BlockYaml(args[1]);
+										blockYaml.setDropItemName(args[1]);
+										blockYaml.setStructureName(args[1]);
+										blockYaml.save();
+										
 										player.getInventory().setItemInMainHand(P.getItemYaml(args[1]).getItem());					//Das neue Item wird in die Hand des Spielers gesetzt 
 										return true;																				//Methode wird abgschlossen und "richtig" zurück gegeben
 									}

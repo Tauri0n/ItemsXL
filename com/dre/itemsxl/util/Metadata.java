@@ -3,8 +3,16 @@ package com.dre.itemsxl.util;
 import net.minecraft.server.v1_9_R2.NBTTagCompound;
 
 
+
+
+
+
+import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_9_R2.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.metadata.FixedMetadataValue;
+
+import com.dre.itemsxl.P;
 
 public class Metadata {
 
@@ -73,5 +81,31 @@ public class Metadata {
 			return false;
 		}
 	}
-
+	/*
+	 * Blocks
+	 */
+	public static void setInt(Location location, String key, Integer value){
+		location.getBlock().setMetadata(key, new FixedMetadataValue(P.getPlugin(), value));
+	}
+	
+	public static void setString(Location location, String key, String value){
+		location.getBlock().setMetadata(key, new FixedMetadataValue(P.getPlugin(), value));
+	}
+	
+	public static boolean hasKey(Location location, String key){
+		return location.getBlock().hasMetadata(key);
+	}
+	
+	public static Integer getInt(Location location, String key){
+		return Integer.parseInt(getString(location, key));
+	}
+	
+	public static String getString(Location location, String key){
+		return location.getBlock().getMetadata(key).get(0).value().toString();
+	}
+	
+	public static void remove(Location location, String key){
+		location.getBlock().removeMetadata(key, P.getPlugin());
+	}
+	
 }

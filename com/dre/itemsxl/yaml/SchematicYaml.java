@@ -29,10 +29,10 @@ public class SchematicYaml {
 	}
 	
 	public void save(){
-		yaml.set(BLOCKS, getBlocks());
-		
 		try{
+			yaml.set(BLOCKS, getBlocks());
 			yaml.save(getPath());
+			load();
 		} catch (Exception e){
 			e.printStackTrace();
 		}
@@ -42,6 +42,7 @@ public class SchematicYaml {
 		try{
 			yaml.load(getPath());
 			setBlocks(yaml.getStringList(BLOCKS));
+			P.addSchematic(this);
 		} catch (Exception e){
 			e.printStackTrace();
 		}
