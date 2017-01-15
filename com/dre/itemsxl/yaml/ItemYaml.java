@@ -55,8 +55,7 @@ public class ItemYaml {
 	
 	/** Definiert die Struktur welche auf dem Item gebunden ist.**/
 	public static final String STRUCTURE_NAME = "StructureName";
-	
-	
+		
 	/** Definiert wie viele halbe Hungerbalken beim verzehr des Item hinzu oder abgezogen werden. **/
 	public static final String SATURATION = "Saturation";
 	
